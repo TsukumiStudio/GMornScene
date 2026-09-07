@@ -1,6 +1,6 @@
 extends SceneTree
 
-## ルートパス設定（`.tres` への保存の永続化）と走査（再帰・拡張子絞り込み・ドット除外）を確かめる。
+## ルートパス設定（プロジェクト設定への登録・保存）と走査（再帰・拡張子絞り込み・ドット除外）を確かめる。
 ##
 ## `Window`/`EditorPlugin` はエディタ本体が無いと意味を持たない実行系なので、
 ## ここではポップアップは開かない。`gmorn_window/verify.gd` も同じ理由で
@@ -13,7 +13,7 @@ const SCANNER_PATH := "res://addons/gmorn_scene/gmorn_scene_scanner.gd"
 const SETTINGS_PATH := "res://addons/gmorn_scene/gmorn_scene_settings.gd"
 const SECTION_PATH := "res://addons/gmorn_scene/gmorn_scene_section.gd"
 const FIXTURE_ROOT := "res://gmorn_scene_verify_scenes"
-const SETTINGS_TRES_PATH := "res://gmorn_scene_verify_settings.tres"
+const SETTINGS_SAVE_PATH := "res://gmorn_scene_verify_settings.godot"
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -27,15 +27,23 @@ func _run() -> void:
 	control.free()
 
 	var settings_script: GDScript = load(SETTINGS_PATH)
-	var settings: Resource = settings_script.new()
-	assert(settings.root_path == "res://scenes/screens/", "既定のルートパスが %s" % settings.root_path)
-
-	# 変更すると `.tres` として保存され、gitで共有される。
-	settings.root_path = FIXTURE_ROOT
-	var save_error := ResourceSaver.save(settings, SETTINGS_TRES_PATH)
-	assert(save_error == OK, "設定の保存が失敗した: %d" % save_error)
-	var reloaded: Resource = load(SETTINGS_TRES_PATH)
-	assert(reloaded.root_path == FIXTURE_ROOT, "再読み込みしたルートパスが %s" % reloaded.root_path)
+	settings_script.register_settings()
+	assert(settings_script.root_path() == "res://scenes/screens/", "既定のルートパスが違う")
+	var property_found := false
+	for info: Dictionary in ProjectSettings.get_property_list():
+		if info.name == settings_script.ROOT_PATH_KEY:
+			property_found = true
+			assert(info.type == TYPE_STRING and info.hint == PROPERTY_HINT_DIR,
+				"検索ルートがフォルダー選択可能な文字列でない")
+			assert(info.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING, "詳細設定を開かないと見えない")
+	assert(property_found, "プロジェクト設定に検索ルートが登録されていない")
+	ProjectSettings.set_setting(settings_script.ROOT_PATH_KEY, FIXTURE_ROOT)
+	settings_script.register_settings()
+	assert(settings_script.root_path() == FIXTURE_ROOT, "再登録で既存の設定値が消えた")
+	assert(ProjectSettings.save_custom(SETTINGS_SAVE_PATH) == OK, "設定を保存できない")
+	var reloaded := ConfigFile.new()
+	assert(reloaded.load(SETTINGS_SAVE_PATH) == OK, "設定を読み戻せない")
+	assert(reloaded.get_value("gmorn_scene", "root_path") == FIXTURE_ROOT, "検索ルートが保存されていない")
 
 	# 走査: 再帰・.tscn以外の除外・ドット始まりディレクトリの除外・パス昇順。
 	var root_abs := ProjectSettings.globalize_path(FIXTURE_ROOT)
@@ -66,7 +74,7 @@ func _run() -> void:
 	DirAccess.remove_absolute(root_abs.path_join(".hidden/d.tscn"))
 	DirAccess.remove_absolute(root_abs.path_join(".hidden"))
 	DirAccess.remove_absolute(root_abs)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS_TRES_PATH))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS_SAVE_PATH))
 
 	print("走査件数=%d 既定ルート=%s" % [scene_paths.size(), "res://scenes/screens/"])
 	print("GMORN SCENE VERIFY: PASS")

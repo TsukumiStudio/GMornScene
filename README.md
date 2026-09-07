@@ -18,7 +18,7 @@ GMornDebugMenu のセクションです。独自の `EditorPlugin`、`plugin.cfg
 - 指定ルート下の `.tscn` を再帰走査し、パス順に表示
 - 各シーンをエディタで開く、または個別に再生
 - 一覧はドックの空き領域まで広がり、収まらない行だけ縦スクロール
-- ルートパスを `.tres` から読み込み、ファイルシステム変更時に一覧を更新
+- ルートパスはプロジェクト設定の文字列で指定し、設定・ファイル変更時に一覧を更新
 
 ## Usage
 
@@ -49,8 +49,10 @@ GMornDebugMenu のセクションです。独自の `EditorPlugin`、`plugin.cfg
 
 4. エディタを開き直すと GMornDebugMenu ドックに「GMorn Scene」が現れます。
    各行の「開く」または「再生」を使います。ルートパスの入力欄はありません。
-   検索範囲を変える場合は、プロジェクト側の `assets/gmorn_scene_settings.tres` の
-   `root_path` を編集し、ドックを開き直してください。
+   検索範囲は「プロジェクト設定 → GMorn Scene → Root Path」で指定します。
+   文字列の入力またはフォルダー選択ができ、変更は一覧へ反映されます。
+   値は `project.godot` の `gmorn_scene/root_path` に保存します（既定は `res://scenes/screens/`）。
+   旧版の設定 `.tres` を使っているプロジェクトは、その `root_path` をこの項目へ移してください。
 
 5. 部品単体の検証はリポジトリ直下で `./verify.sh` を実行します。一時プロジェクト内の
    `addons/gmorn_scene/` にコピーして検証するため、ここには `project.godot` を置きません。

@@ -12,4 +12,5 @@ extends "../gmorn_debug_menu/gmorn_debug_menu_section.gd"
 const DOCK_SCENE := preload("res://addons/gmorn_scene/gmorn_scene_dock.tscn")
 
 func create_control() -> Control:
+	preload("gmorn_scene_settings.gd").register_settings()
 	return DOCK_SCENE.instantiate()
