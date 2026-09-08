@@ -9,8 +9,9 @@ extends HBoxContainer
 
 ## `open_scene_from_path` はエディタでそのシーンを開く。`play_custom_scene` は現在編集中の
 ## シーンを問わずそのシーンを実行する（`EditorInterface` のカスタムシーン再生と同じ経路）。
-func setup(scene_path: String, editor_interface: EditorInterface) -> void:
-	path_label.text = scene_path
+func setup(scene_path: String, editor_interface: EditorInterface, root_path := "") -> void:
+	path_label.text = scene_path.trim_prefix(root_path.trim_suffix("/") + "/") if not root_path.is_empty() else scene_path
+	path_label.tooltip_text = scene_path
 	open_button.pressed.connect(func() -> void:
 		if editor_interface != null:
 			editor_interface.open_scene_from_path(scene_path)

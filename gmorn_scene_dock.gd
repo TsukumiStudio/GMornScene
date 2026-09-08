@@ -47,4 +47,4 @@ func refresh_scenes() -> void:
 	for scene_path: String in scene_paths:
 		var row: HBoxContainer = ROW_SCENE.instantiate()
 		rows_container.add_child(row)
-		row.setup(scene_path, EditorInterface)
+		row.setup(scene_path, EditorInterface, _root_path)

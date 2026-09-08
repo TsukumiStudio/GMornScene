@@ -60,3 +60,5 @@ GMornDebugMenu のセクションです。独自の `EditorPlugin`、`plugin.cfg
 ## License
 
 [The Unlicense](UNLICENSE)
+
+一覧には設定したルートからの相対パスを表示する。たとえばルートが `res://scenes/screens` なら `novel_preview.tscn` と表示する。サブフォルダー名は保持し、ホバーで完全パスを確認できる。「開く」「再生」には元の完全パスを使う。
